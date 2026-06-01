@@ -4,8 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0B0F19">
-  <title>SkillGauntlet</title>
+  <title>SkillGauntlet - Master Your Code</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="app-shell">
   <div class="app-wrapper">
@@ -25,22 +26,53 @@
       <aside class="side-block left-block" aria-hidden="true"></aside>
 
       <section class="workspace-frame" id="workspaceFrame">
+        <article class="view-panel" id="view-signin">
+          <div class="panel-card signin-card">
+            <div class="panel-head signin-head">
+              <h1>Welcome to SkillGauntlet</h1>
+              <p class="panel-copy">Master programming languages through interactive challenges</p>
+            </div>
+            <div class="signin-container">
+              <div id="g_id_onload"
+                data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                data-callback="handleGoogleSignIn"></div>
+              <div class="g_id_signin" data-type="standard" data-size="large" data-theme="dark" data-text="signin_with" data-shape="rectangular" data-logo_alignment="left"></div>
+            </div>
+            <div class="signin-divider">or continue as guest</div>
+            <button type="button" class="primary-button" id="guestButton">Skip for Now</button>
+            <p class="signin-footer">Secure authentication with Google • Your data is private</p>
+          </div>
+        </article>
+
         <article class="view-panel" id="view-dashboard">
           <div class="panel-card">
             <div class="panel-head">
-              <h1>Language Dashboard</h1>
-              <p class="panel-copy">Choose your beginner gauntlet and enter the cybernetic preparation zone.</p>
-            </div>
-            <div class="input-group">
-              <label for="candidateName">Candidate Handle</label>
-              <input id="candidateName" type="text" placeholder="Enter name for certificate" maxlength="24">
+              <h1>Select Your Challenge</h1>
+              <p class="panel-copy" id="userGreeting">Choose a programming language and test your skills</p>
             </div>
             <div class="language-grid" id="languageGrid">
-              <button type="button" class="language-card" data-language="python">Python</button>
-              <button type="button" class="language-card" data-language="javascript">JavaScript</button>
-              <button type="button" class="language-card" data-language="java">Java</button>
-              <button type="button" class="language-card" data-language="cpp">C++</button>
+              <button type="button" class="language-card" data-language="python">
+                <span class="lang-icon">🐍</span>
+                <span class="lang-name">Python</span>
+                <span class="lang-desc">Data & AI</span>
+              </button>
+              <button type="button" class="language-card" data-language="javascript">
+                <span class="lang-icon">⚡</span>
+                <span class="lang-name">JavaScript</span>
+                <span class="lang-desc">Web Dev</span>
+              </button>
+              <button type="button" class="language-card" data-language="java">
+                <span class="lang-icon">☕</span>
+                <span class="lang-name">Java</span>
+                <span class="lang-desc">Enterprise</span>
+              </button>
+              <button type="button" class="language-card" data-language="cpp">
+                <span class="lang-icon">⚙️</span>
+                <span class="lang-name">C++</span>
+                <span class="lang-desc">Systems</span>
+              </button>
             </div>
+            <button type="button" class="secondary-button" id="signoutButton" style="margin-top: 20px;">Sign Out</button>
           </div>
         </article>
 

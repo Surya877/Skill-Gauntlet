@@ -1,5 +1,6 @@
 const app = {
-  currentView: 'dashboard',
+  currentView: 'signin',
+  user: null,
   language: '',
   questions: [],
   currentIndex: 0,
@@ -7,14 +8,15 @@ const app = {
   score: 0,
   cooldownTarget: null,
   cooldownInterval: null,
-  studentName: '',
 };
 
 const elements = {
+  viewSignin: document.getElementById('view-signin'),
   viewDashboard: document.getElementById('view-dashboard'),
   viewQuiz: document.getElementById('view-quiz'),
   viewScore: document.getElementById('view-score'),
   viewCooldown: document.getElementById('view-cooldown'),
+  userGreeting: document.getElementById('userGreeting'),
   questionIndex: document.getElementById('questionIndex'),
   progressFill: document.getElementById('progressFill'),
   questionText: document.getElementById('questionText'),
@@ -31,8 +33,9 @@ const elements = {
   unlockButton: document.getElementById('unlockButton'),
   cooldownCopy: document.getElementById('cooldownCopy'),
   cooldownRestartButton: document.getElementById('cooldownRestartButton'),
-  candidateName: document.getElementById('candidateName'),
   languageGrid: document.getElementById('languageGrid'),
+  guestButton: document.getElementById('guestButton'),
+  signoutButton: document.getElementById('signoutButton'),
 };
 
 const questionBank = {
@@ -127,16 +130,29 @@ const questionBank = {
 };
 
 function initApp() {
-  setupEventListeners();
   restoreCooldown();
+  setupEventListeners();
   renderCurrentView();
 }
 
 function setupEventListeners() {
+  elements.guestButton.addEventListener('click', () => {
+    app.user = { name: 'Guest', email: 'guest@skillgauntlet.local' };
+    updateView('dashboard');
+  });
+
+  elements.signoutButton.addEventListener('click', () => {
+    app.user = null;
+    app.language = '';
+    app.questions = [];
+    app.currentIndex = 0;
+    app.score = 0;
+    updateView('signin');
+  });
+
   elements.languageGrid.addEventListener('click', (event) => {
     const button = event.target.closest('button[data-language]');
     if (!button || button.disabled) return;
-    app.studentName = elements.candidateName.value.trim() || 'SKILLGAUNTLET USER';
     app.language = button.dataset.language;
     startQuiz(app.language);
   });
@@ -148,24 +164,30 @@ function setupEventListeners() {
   elements.showCooldownButton.addEventListener('click', () => updateView('cooldown'));
   elements.unlockButton.addEventListener('click', handleUnlock);
   elements.cooldownRestartButton.addEventListener('click', resetToDashboard);
-  elements.candidateName.addEventListener('input', (event) => {
-    app.studentName = event.target.value.trim() || 'SKILLGAUNTLET USER';
-  });
 }
 
 function renderCurrentView() {
-  const views = [elements.viewDashboard, elements.viewQuiz, elements.viewScore, elements.viewCooldown];
+  const views = [
+    elements.viewSignin,
+    elements.viewDashboard,
+    elements.viewQuiz,
+    elements.viewScore,
+    elements.viewCooldown,
+  ];
   views.forEach((view) => view.classList.add('hidden'));
-  if (app.currentView === 'dashboard') {
+
+  if (app.currentView === 'signin') {
+    elements.viewSignin.classList.remove('hidden');
+  } else if (app.currentView === 'dashboard') {
     elements.viewDashboard.classList.remove('hidden');
-  }
-  if (app.currentView === 'quiz') {
+    if (app.user) {
+      elements.userGreeting.textContent = `Welcome, ${app.user.name}! Choose a language to begin.`;
+    }
+  } else if (app.currentView === 'quiz') {
     elements.viewQuiz.classList.remove('hidden');
-  }
-  if (app.currentView === 'score') {
+  } else if (app.currentView === 'score') {
     elements.viewScore.classList.remove('hidden');
-  }
-  if (app.currentView === 'cooldown') {
+  } else if (app.currentView === 'cooldown') {
     elements.viewCooldown.classList.remove('hidden');
   }
 }
@@ -181,30 +203,15 @@ function resetToDashboard() {
   app.selectedAnswer = null;
   app.score = 0;
   app.language = '';
-  app.studentName = elements.candidateName.value.trim() || 'SKILLGAUNTLET USER';
   elements.nextButton.disabled = true;
   elements.reviewPane.classList.add('hidden');
   elements.certificatePane.classList.add('hidden');
+
   if (!app.cooldownTarget) {
-    enableLanguageDeck();
     updateView('dashboard');
   } else {
     updateView('cooldown');
   }
-}
-
-function disableLanguageDeck() {
-  elements.languageGrid.querySelectorAll('button').forEach((button) => {
-    button.disabled = true;
-    button.classList.add('disabled');
-  });
-}
-
-function enableLanguageDeck() {
-  elements.languageGrid.querySelectorAll('button').forEach((button) => {
-    button.disabled = false;
-    button.classList.remove('disabled');
-  });
 }
 
 async function startQuiz(language) {
@@ -280,6 +287,7 @@ function shuffleArray(array) {
 function renderQuestion() {
   const item = app.questions[app.currentIndex];
   if (!item) return;
+
   elements.questionIndex.textContent = `Question ${app.currentIndex + 1} of ${app.questions.length}`;
   elements.progressFill.style.width = `${((app.currentIndex) / app.questions.length) * 100}%`;
   elements.questionText.textContent = item.question;
@@ -322,12 +330,16 @@ function handleNextQuestion() {
 
 function finalizeScore() {
   const percent = Math.round((app.score / app.questions.length) * 100);
+  const userName = app.user ? app.user.name : 'SKILLGAUNTLET USER';
+  
   elements.scoreSummary.innerHTML = `
     <p><strong>Final Score:</strong> ${percent}%</p>
     <p><strong>Correct Answers:</strong> ${app.score} / ${app.questions.length}</p>
+    <p><strong>Candidate:</strong> ${userName}</p>
   `;
+  
   if (percent >= 70) {
-    renderCertificateCanvas();
+    renderCertificateCanvas(userName);
     elements.reviewPane.classList.add('hidden');
     elements.certificatePane.classList.remove('hidden');
     setCooldownLock();
@@ -338,7 +350,7 @@ function finalizeScore() {
   updateView('score');
 }
 
-function renderCertificateCanvas() {
+function renderCertificateCanvas(userName) {
   const canvas = document.getElementById('certificateCanvas');
   const ctx = canvas.getContext('2d');
   const width = canvas.width;
@@ -369,7 +381,7 @@ function renderCertificateCanvas() {
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#F4F7FF';
   ctx.font = '90px "JetBrains Mono", monospace';
-  ctx.fillText(`Name: ${app.studentName}`, 120, 420);
+  ctx.fillText(`Name: ${userName}`, 120, 420);
   ctx.fillText(`Language: ${capitalize(app.language)}`, 120, 520);
   ctx.fillText(`Date: ${new Date().toLocaleDateString('en-US')}`, 120, 620);
 
@@ -401,7 +413,8 @@ function downloadCertificate() {
   const url = canvas.toDataURL('image/png');
   const link = document.createElement('a');
   link.href = url;
-  link.download = `SkillGauntlet-Certificate-${app.language || 'candidate'}.png`;
+  const userName = app.user ? app.user.name.replace(/\s/g, '-') : 'candidate';
+  link.download = `SkillGauntlet-Certificate-${app.language}-${userName}.png`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -425,8 +438,7 @@ function restoreCooldown() {
   }
   if (target > Date.now()) {
     app.cooldownTarget = target;
-    disableLanguageDeck();
-    updateView('cooldown');
+    app.currentView = 'cooldown';
     startCooldownTimer();
     return;
   }
@@ -463,7 +475,6 @@ function updateCooldownDisplay() {
 function handleUnlock() {
   if (elements.unlockButton.disabled) return;
   app.cooldownTarget = null;
-  enableLanguageDeck();
   elements.unlockButton.disabled = true;
   updateView('dashboard');
 }
@@ -473,4 +484,34 @@ function capitalize(value) {
   return value === 'cpp' ? 'C++' : value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+function handleGoogleSignIn(response) {
+  if (response.credential) {
+    const decoded = parseJwt(response.credential);
+    app.user = {
+      name: decoded.name,
+      email: decoded.email,
+      picture: decoded.picture,
+    };
+    updateView('dashboard');
+  }
+}
+
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('JWT decode error:', e);
+    return {};
+  }
+}
+
+window.handleGoogleSignIn = handleGoogleSignIn;
 initApp();
