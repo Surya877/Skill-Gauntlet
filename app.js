@@ -8,6 +8,7 @@ const app = {
   score: 0,
   cooldownTarget: null,
   cooldownInterval: null,
+  authMode: 'login',
 };
 
 const elements = {
@@ -18,6 +19,7 @@ const elements = {
   viewCooldown: document.getElementById('view-cooldown'),
   userGreeting: document.getElementById('userGreeting'),
   questionIndex: document.getElementById('questionIndex'),
+  quizLanguage: document.getElementById('quizLanguage'),
   progressFill: document.getElementById('progressFill'),
   questionText: document.getElementById('questionText'),
   optionsGrid: document.getElementById('optionsGrid'),
@@ -34,8 +36,16 @@ const elements = {
   cooldownCopy: document.getElementById('cooldownCopy'),
   cooldownRestartButton: document.getElementById('cooldownRestartButton'),
   languageGrid: document.getElementById('languageGrid'),
-  guestButton: document.getElementById('guestButton'),
   signoutButton: document.getElementById('signoutButton'),
+  loginTab: document.getElementById('loginTab'),
+  signupTab: document.getElementById('signupTab'),
+  authForm: document.getElementById('authForm'),
+  authName: document.getElementById('authName'),
+  authEmail: document.getElementById('authEmail'),
+  authPassword: document.getElementById('authPassword'),
+  authSubmit: document.getElementById('authSubmit'),
+  authMessage: document.getElementById('authMessage'),
+  nameField: document.getElementById('nameField'),
 };
 
 const questionBank = {
@@ -132,14 +142,14 @@ const questionBank = {
 function initApp() {
   restoreCooldown();
   setupEventListeners();
+  setAuthMode(app.authMode);
   renderCurrentView();
 }
 
 function setupEventListeners() {
-  elements.guestButton.addEventListener('click', () => {
-    app.user = { name: 'Guest', email: 'guest@skillgauntlet.local' };
-    updateView('dashboard');
-  });
+  elements.loginTab.addEventListener('click', () => setAuthMode('login'));
+  elements.signupTab.addEventListener('click', () => setAuthMode('signup'));
+  elements.authForm.addEventListener('submit', handleAuthSubmit);
 
   elements.signoutButton.addEventListener('click', () => {
     app.user = null;
@@ -148,6 +158,7 @@ function setupEventListeners() {
     app.currentIndex = 0;
     app.score = 0;
     updateView('signin');
+    setAuthMode('login');
   });
 
   elements.languageGrid.addEventListener('click', (event) => {
@@ -190,6 +201,108 @@ function renderCurrentView() {
   } else if (app.currentView === 'cooldown') {
     elements.viewCooldown.classList.remove('hidden');
   }
+
+  document.body.dataset.view = app.currentView;
+}
+
+function setAuthMode(mode) {
+  app.authMode = mode;
+  const isSignup = mode === 'signup';
+
+  elements.loginTab.classList.toggle('active', !isSignup);
+  elements.signupTab.classList.toggle('active', isSignup);
+  elements.loginTab.setAttribute('aria-selected', String(!isSignup));
+  elements.signupTab.setAttribute('aria-selected', String(isSignup));
+  elements.nameField.classList.toggle('hidden', !isSignup);
+  elements.authName.required = isSignup;
+  elements.authPassword.autocomplete = isSignup ? 'new-password' : 'current-password';
+  elements.authSubmit.textContent = isSignup ? 'Create Account' : 'Login';
+  elements.authMessage.textContent = '';
+  elements.authMessage.className = 'auth-message';
+}
+
+function handleAuthSubmit(event) {
+  event.preventDefault();
+
+  const email = elements.authEmail.value.trim().toLowerCase();
+  const password = elements.authPassword.value;
+  const name = elements.authName.value.trim();
+
+  if (!isValidEmail(email)) {
+    showAuthMessage('Please enter a valid email address.', 'error');
+    return;
+  }
+
+  if (password.length < 6) {
+    showAuthMessage('Password must be at least 6 characters.', 'error');
+    return;
+  }
+
+  if (app.authMode === 'signup') {
+    createLocalAccount(name, email, password);
+    return;
+  }
+
+  loginLocalAccount(email, password);
+}
+
+function createLocalAccount(name, email, password) {
+  if (!name) {
+    showAuthMessage('Please enter your full name.', 'error');
+    return;
+  }
+
+  const users = getStoredUsers();
+  if (users[email]) {
+    showAuthMessage('An account already exists for this email. Please login.', 'error');
+    setAuthMode('login');
+    elements.authEmail.value = email;
+    return;
+  }
+
+  users[email] = {
+    name,
+    email,
+    password,
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem('sg_users', JSON.stringify(users));
+
+  app.user = { name, email };
+  elements.authForm.reset();
+  updateView('dashboard');
+}
+
+function loginLocalAccount(email, password) {
+  const users = getStoredUsers();
+  const user = users[email];
+
+  if (!user || user.password !== password) {
+    showAuthMessage('Email or password is incorrect.', 'error');
+    return;
+  }
+
+  app.user = { name: user.name, email: user.email };
+  elements.authForm.reset();
+  updateView('dashboard');
+}
+
+function getStoredUsers() {
+  try {
+    return JSON.parse(localStorage.getItem('sg_users')) || {};
+  } catch (error) {
+    console.warn('Stored users could not be parsed:', error);
+    return {};
+  }
+}
+
+function showAuthMessage(message, type) {
+  elements.authMessage.textContent = message;
+  elements.authMessage.className = `auth-message ${type}`;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function updateView(viewName) {
@@ -288,8 +401,10 @@ function renderQuestion() {
   const item = app.questions[app.currentIndex];
   if (!item) return;
 
+  const isLastQuestion = app.currentIndex === app.questions.length - 1;
   elements.questionIndex.textContent = `Question ${app.currentIndex + 1} of ${app.questions.length}`;
-  elements.progressFill.style.width = `${((app.currentIndex) / app.questions.length) * 100}%`;
+  elements.quizLanguage.textContent = `${capitalize(app.language)} - Beginner tier`;
+  elements.progressFill.style.width = `${((app.currentIndex + 1) / app.questions.length) * 100}%`;
   elements.questionText.textContent = item.question;
 
   elements.optionsGrid.innerHTML = '';
@@ -298,11 +413,13 @@ function renderQuestion() {
     btn.type = 'button';
     btn.className = 'option-button';
     btn.textContent = optionText;
+    btn.dataset.letter = String.fromCharCode(65 + index);
     btn.dataset.index = index;
     btn.addEventListener('click', () => selectOption(btn, index));
     elements.optionsGrid.appendChild(btn);
   });
   elements.nextButton.disabled = true;
+  elements.nextButton.textContent = isLastQuestion ? 'Finish Challenge' : 'Next Question';
 }
 
 function selectOption(button, index) {
@@ -325,7 +442,19 @@ function handleNextQuestion() {
     finalizeScore();
     return;
   }
-  renderQuestion();
+  transitionQuestion();
+}
+
+function transitionQuestion() {
+  const questionBlock = document.querySelector('.question-block');
+  questionBlock.classList.add('is-changing');
+  elements.optionsGrid.classList.add('is-changing');
+
+  window.setTimeout(() => {
+    renderQuestion();
+    questionBlock.classList.remove('is-changing');
+    elements.optionsGrid.classList.remove('is-changing');
+  }, 170);
 }
 
 function finalizeScore() {
@@ -333,9 +462,18 @@ function finalizeScore() {
   const userName = app.user ? app.user.name : 'SKILLGAUNTLET USER';
   
   elements.scoreSummary.innerHTML = `
-    <p><strong>Final Score:</strong> ${percent}%</p>
-    <p><strong>Correct Answers:</strong> ${app.score} / ${app.questions.length}</p>
-    <p><strong>Candidate:</strong> ${userName}</p>
+    <div class="score-metric">
+      <span class="metric-label">Final score</span>
+      <span class="metric-value">${percent}%</span>
+    </div>
+    <div class="score-metric">
+      <span class="metric-label">Correct answers</span>
+      <span class="metric-value">${app.score}/${app.questions.length}</span>
+    </div>
+    <div class="score-metric">
+      <span class="metric-label">Candidate</span>
+      <span class="metric-value">${escapeHtml(userName)}</span>
+    </div>
   `;
   
   if (percent >= 70) {
@@ -484,34 +622,13 @@ function capitalize(value) {
   return value === 'cpp' ? 'C++' : value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-function handleGoogleSignIn(response) {
-  if (response.credential) {
-    const decoded = parseJwt(response.credential);
-    app.user = {
-      name: decoded.name,
-      email: decoded.email,
-      picture: decoded.picture,
-    };
-    updateView('dashboard');
-  }
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-function parseJwt(token) {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
-    );
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    console.error('JWT decode error:', e);
-    return {};
-  }
-}
-
-window.handleGoogleSignIn = handleGoogleSignIn;
 initApp();

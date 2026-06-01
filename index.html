@@ -3,18 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0B0F19">
-  <title>SkillGauntlet - Master Your Code</title>
+  <meta name="theme-color" content="#10131A">
+  <meta name="description" content="SkillGauntlet is an interactive programming quiz platform for focused skill assessment.">
+  <title>SkillGauntlet | Professional Coding Challenges</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="app-shell">
   <div class="app-wrapper">
     <header class="top-header" role="banner">
       <div class="header-grid">
         <div class="brand-zone">
-          <span class="brand-label">SkillGauntlet</span>
-          <span class="brand-tag">Interactive Engineering Gauntlet</span>
+          <span class="brand-mark" aria-hidden="true">SG</span>
+          <span>
+            <span class="brand-label">SkillGauntlet</span>
+            <span class="brand-tag">Professional coding assessment studio</span>
+          </span>
+        </div>
+        <div class="header-status" aria-label="Platform status">
+          <span class="status-dot" aria-hidden="true"></span>
+          Live challenge mode
         </div>
         <div class="adsense-zone" aria-label="Adsense Leaderboard Slot">
           <!-- ADSENSE LEADERBOARD ZONE -->
@@ -29,50 +39,71 @@
         <article class="view-panel" id="view-signin">
           <div class="panel-card signin-card">
             <div class="panel-head signin-head">
+              <span class="eyebrow">Skill certification, refined</span>
               <h1>Welcome to SkillGauntlet</h1>
-              <p class="panel-copy">Master programming languages through interactive challenges</p>
+              <p class="panel-copy">Build confidence with focused language challenges, progress tracking, and downloadable achievement credentials.</p>
             </div>
-            <div class="signin-container">
-              <div id="g_id_onload"
-                data-client_id="742033003008-q6dn7sr6utg1eaakajpu65qo7aubpdr9.apps.googleusercontent.com"
-                data-callback="handleGoogleSignIn"></div>
-              <div class="g_id_signin" data-type="standard" data-size="large" data-theme="dark" data-text="signin_with" data-shape="rectangular" data-logo_alignment="left"></div>
+            <div class="auth-card">
+              <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+                <button type="button" class="auth-tab active" id="loginTab" aria-selected="true">Login</button>
+                <button type="button" class="auth-tab" id="signupTab" aria-selected="false">Sign Up</button>
+              </div>
+              <form class="auth-form" id="authForm">
+                <div class="input-group" id="nameField">
+                  <label for="authName">Full name</label>
+                  <input type="text" id="authName" autocomplete="name" placeholder="Enter your name">
+                </div>
+                <div class="input-group">
+                  <label for="authEmail">Email address</label>
+                  <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com" required>
+                </div>
+                <div class="input-group">
+                  <label for="authPassword">Password</label>
+                  <input type="password" id="authPassword" autocomplete="current-password" placeholder="Enter your password" minlength="6" required>
+                </div>
+                <p class="auth-message" id="authMessage" role="status" aria-live="polite"></p>
+                <button type="submit" class="primary-button" id="authSubmit">Login</button>
+              </form>
             </div>
-            <div class="signin-divider">or continue as guest</div>
-            <button type="button" class="primary-button" id="guestButton">Skip for Now</button>
-            <p class="signin-footer">Secure authentication with Google • Your data is private</p>
+            <p class="signin-footer">Use your email and password to access your SkillGauntlet dashboard.</p>
           </div>
         </article>
 
-        <article class="view-panel" id="view-dashboard">
+        <article class="view-panel hidden" id="view-dashboard">
           <div class="panel-card">
             <div class="panel-head">
+              <span class="eyebrow">Challenge dashboard</span>
               <h1>Select Your Challenge</h1>
               <p class="panel-copy" id="userGreeting">Choose a programming language and test your skills</p>
             </div>
+            <div class="stats-strip" aria-label="Challenge details">
+              <span><strong>20</strong> Questions</span>
+              <span><strong>70%</strong> Pass mark</span>
+              <span><strong>1h</strong> Secure cooldown</span>
+            </div>
             <div class="language-grid" id="languageGrid">
               <button type="button" class="language-card" data-language="python">
-                <span class="lang-icon">🐍</span>
+                <span class="lang-icon">Py</span>
                 <span class="lang-name">Python</span>
                 <span class="lang-desc">Data & AI</span>
               </button>
               <button type="button" class="language-card" data-language="javascript">
-                <span class="lang-icon">⚡</span>
+                <span class="lang-icon">JS</span>
                 <span class="lang-name">JavaScript</span>
                 <span class="lang-desc">Web Dev</span>
               </button>
               <button type="button" class="language-card" data-language="java">
-                <span class="lang-icon">☕</span>
+                <span class="lang-icon">Jv</span>
                 <span class="lang-name">Java</span>
                 <span class="lang-desc">Enterprise</span>
               </button>
               <button type="button" class="language-card" data-language="cpp">
-                <span class="lang-icon">⚙️</span>
+                <span class="lang-icon">C++</span>
                 <span class="lang-name">C++</span>
                 <span class="lang-desc">Systems</span>
               </button>
             </div>
-            <button type="button" class="secondary-button" id="signoutButton" style="margin-top: 20px;">Sign Out</button>
+            <button type="button" class="secondary-button" id="signoutButton">Sign Out</button>
           </div>
         </article>
 
@@ -80,6 +111,7 @@
           <div class="panel-card">
             <div class="telemetry-bar">
               <span id="questionIndex">Question 1 of 20</span>
+              <span class="quiz-language" id="quizLanguage">Beginner tier</span>
               <div class="progress-track" aria-hidden="true">
                 <div class="progress-fill" id="progressFill"></div>
               </div>
@@ -101,6 +133,7 @@
         <article class="view-panel hidden" id="view-score">
           <div class="panel-card">
             <div class="panel-head">
+              <span class="eyebrow">Performance report</span>
               <h1>Score Processing Hub</h1>
               <p class="panel-copy">Evaluate your performance matrix and unlock your result.</p>
             </div>
@@ -122,6 +155,7 @@
         <article class="view-panel hidden" id="view-cooldown">
           <div class="panel-card">
             <div class="panel-head">
+              <span class="eyebrow">Secure progression</span>
               <h1>Secure Tier Cooldown</h1>
               <p class="panel-copy">Your intermediate tier is secured by an enforced cool-down lock.</p>
             </div>
