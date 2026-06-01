@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0B0F19">
+  <title>SkillGauntlet</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="app-shell">
+  <div class="app-wrapper">
+    <header class="top-header" role="banner">
+      <div class="header-grid">
+        <div class="brand-zone">
+          <span class="brand-label">SkillGauntlet</span>
+          <span class="brand-tag">Interactive Engineering Gauntlet</span>
+        </div>
+        <div class="adsense-zone" aria-label="Adsense Leaderboard Slot">
+          <!-- ADSENSE LEADERBOARD ZONE -->
+        </div>
+      </div>
+    </header>
+
+    <main class="core-layout" role="main">
+      <aside class="side-block left-block" aria-hidden="true"></aside>
+
+      <section class="workspace-frame" id="workspaceFrame">
+        <article class="view-panel" id="view-dashboard">
+          <div class="panel-card">
+            <div class="panel-head">
+              <h1>Language Dashboard</h1>
+              <p class="panel-copy">Choose your beginner gauntlet and enter the cybernetic preparation zone.</p>
+            </div>
+            <div class="input-group">
+              <label for="candidateName">Candidate Handle</label>
+              <input id="candidateName" type="text" placeholder="Enter name for certificate" maxlength="24">
+            </div>
+            <div class="language-grid" id="languageGrid">
+              <button type="button" class="language-card" data-language="python">Python</button>
+              <button type="button" class="language-card" data-language="javascript">JavaScript</button>
+              <button type="button" class="language-card" data-language="java">Java</button>
+              <button type="button" class="language-card" data-language="cpp">C++</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="view-panel hidden" id="view-quiz">
+          <div class="panel-card">
+            <div class="telemetry-bar">
+              <span id="questionIndex">Question 1 of 20</span>
+              <div class="progress-track" aria-hidden="true">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+            </div>
+            <div class="question-block">
+              <p id="questionText">Loading question...</p>
+            </div>
+            <div class="options-grid" id="optionsGrid"></div>
+            <div class="inline-ad-slot" aria-label="Inline ad slot">
+              <!-- ADSENSE INLINE QUIZ SLOT -->
+            </div>
+            <div class="actions-row">
+              <button type="button" class="primary-button" id="nextButton" disabled>Next Question</button>
+              <button type="button" class="secondary-button" id="abortButton">Restart</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="view-panel hidden" id="view-score">
+          <div class="panel-card">
+            <div class="panel-head">
+              <h1>Score Processing Hub</h1>
+              <p class="panel-copy">Evaluate your performance matrix and unlock your result.</p>
+            </div>
+            <div class="score-summary" id="scoreSummary"></div>
+            <div class="review-pane hidden" id="reviewPane">
+              <p>Your current performance is below threshold. Review the gauntlet and restart with optimized focus.</p>
+            </div>
+            <div class="certificate-pane hidden" id="certificatePane">
+              <p class="certificate-note">Certification matrix unlocked. Rendered with HTML5 Canvas graphics engine.</p>
+              <button type="button" class="primary-button" id="downloadCertificate">Download Certificate</button>
+              <button type="button" class="secondary-button" id="showCooldownButton">View Secure Tier Cooldown</button>
+            </div>
+            <div class="actions-row" id="scoreActions">
+              <button type="button" class="primary-button" id="restartButton">Restart Gauntlet</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="view-panel hidden" id="view-cooldown">
+          <div class="panel-card">
+            <div class="panel-head">
+              <h1>Secure Tier Cooldown</h1>
+              <p class="panel-copy">Your intermediate tier is secured by an enforced cool-down lock.</p>
+            </div>
+            <div class="cooldown-display">
+              <span class="countdown-label">Time remaining</span>
+              <span class="countdown-timer" id="countdownTimer">59:59</span>
+            </div>
+            <p class="cooldown-copy" id="cooldownCopy">Unlock button activates automatically when the countdown reaches zero.</p>
+            <button type="button" class="primary-button" id="unlockButton" disabled>Unlock Intermediate Tier</button>
+            <button type="button" class="secondary-button" id="cooldownRestartButton">Return to Dashboard</button>
+          </div>
+        </article>
+      </section>
+
+      <aside class="side-block right-block" aria-hidden="true"></aside>
+    </main>
+
+    <footer class="app-footer" role="contentinfo">
+      <nav class="footer-links">
+        <a href="#about">About Us</a>
+        <a href="#privacy">Privacy Policy</a>
+        <a href="#terms">Terms of Service</a>
+        <a href="mailto:support.skillgauntlet@gmail.com">support.skillgauntlet@gmail.com</a>
+      </nav>
+    </footer>
+  </div>
+
+  <canvas id="certificateCanvas" width="2000" height="1414" class="sr-only"></canvas>
+  <script src="app.js" defer></script>
+</body>
+</html>
