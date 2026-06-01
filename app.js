@@ -493,44 +493,347 @@ function renderCertificateCanvas(userName) {
   const ctx = canvas.getContext('2d');
   const width = canvas.width;
   const height = canvas.height;
+  const issuedDate = new Date();
+  const percent = Math.round((app.score / app.questions.length) * 100);
+  const credentialHash = generateCredentialHash();
+  const language = capitalize(app.language);
 
-  const gradient = ctx.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, '#080A11');
-  gradient.addColorStop(0.5, '#0B0F19');
-  gradient.addColorStop(1, '#080A11');
+  ctx.clearRect(0, 0, width, height);
+  ctx.save();
 
-  ctx.fillStyle = gradient;
+  const paper = ctx.createLinearGradient(0, 0, width, height);
+  paper.addColorStop(0, '#fffdf8');
+  paper.addColorStop(0.42, '#f7f1e6');
+  paper.addColorStop(1, '#eef4f7');
+
+  ctx.fillStyle = paper;
   ctx.fillRect(0, 0, width, height);
 
-  ctx.strokeStyle = 'rgba(0, 240, 255, 0.45)';
-  ctx.lineWidth = 26;
-  ctx.strokeRect(40, 40, width - 80, height - 80);
+  drawCertificatePattern(ctx, width, height);
 
-  ctx.strokeStyle = 'rgba(255, 0, 127, 0.25)';
-  ctx.lineWidth = 16;
-  ctx.strokeRect(80, 80, width - 160, height - 160);
+  ctx.strokeStyle = '#123047';
+  ctx.lineWidth = 18;
+  ctx.strokeRect(70, 70, width - 140, height - 140);
 
-  ctx.fillStyle = '#00F0FF';
-  ctx.shadowColor = '#00F0FF';
-  ctx.shadowBlur = 20;
-  ctx.font = '150px "JetBrains Mono", monospace';
-  ctx.fillText('SKILLGAUNTLET CERT', 120, 260);
+  ctx.strokeStyle = '#c89b3c';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(105, 105, width - 210, height - 210);
 
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#F4F7FF';
-  ctx.font = '90px "JetBrains Mono", monospace';
-  ctx.fillText(`Name: ${userName}`, 120, 420);
-  ctx.fillText(`Language: ${capitalize(app.language)}`, 120, 520);
-  ctx.fillText(`Date: ${new Date().toLocaleDateString('en-US')}`, 120, 620);
+  ctx.strokeStyle = 'rgba(18, 48, 71, 0.16)';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(135, 135, width - 270, height - 270);
 
-  const hash = generateCredentialHash();
-  ctx.fillStyle = '#FF007F';
-  ctx.font = '110px "JetBrains Mono", monospace';
-  ctx.fillText(`Credential: ${hash}`, 120, 760);
+  drawRibbon(ctx, width);
 
-  ctx.fillStyle = '#39FF14';
-  ctx.font = '70px "JetBrains Mono", monospace';
-  ctx.fillText('BEGINNER TIER GRADUATION', 120, 920);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#123047';
+  ctx.font = '700 54px Georgia, "Times New Roman", serif';
+  ctx.fillText('SkillGauntlet Academy', width / 2, 215);
+
+  ctx.fillStyle = '#8a681d';
+  ctx.font = '700 34px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('CERTIFICATE OF ACHIEVEMENT', width / 2, 284);
+
+  ctx.fillStyle = '#4b5563';
+  ctx.font = '500 31px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('This certifies that', width / 2, 432);
+
+  ctx.fillStyle = '#0f172a';
+  drawFittedCenteredText(ctx, userName, width / 2, 550, 1320, 92, 'Georgia, "Times New Roman", serif', 700);
+
+  ctx.strokeStyle = 'rgba(200, 155, 60, 0.72)';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(390, 608);
+  ctx.lineTo(width - 390, 608);
+  ctx.stroke();
+
+  ctx.fillStyle = '#334155';
+  ctx.font = '500 34px "Inter", "Segoe UI", sans-serif';
+  drawWrappedCenteredText(
+    ctx,
+    `has successfully completed the ${language} Beginner Tier assessment with a score of ${percent}%.`,
+    width / 2,
+    708,
+    1180,
+    46
+  );
+
+  ctx.fillStyle = '#123047';
+  ctx.font = '700 40px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('Beginner Tier Certification', width / 2, 828);
+
+  drawInfoBox(ctx, 300, 902, 400, 126, 'Language', language);
+  drawInfoBox(ctx, 800, 902, 400, 126, 'Score', `${percent}%`);
+  drawInfoBox(ctx, 1300, 902, 400, 126, 'Issued', issuedDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }));
+
+  drawSeal(ctx, width / 2, 1128, credentialHash);
+
+  // Left: SkillGauntlet verified stamp (smaller, aligned)
+  drawStamp(ctx, 480, 1230, 'SkillGauntlet VERIFIED');
+  // Right: credential authority handwritten signature (Skill Gauntlet)
+  drawHandwrittenSignature(ctx, 1220, 1210, 'Skill Gauntlet', credentialHash);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#64748b';
+  ctx.font = '500 24px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText(`Credential ID: ${credentialHash}`, width / 2, 1322);
+  ctx.restore();
+}
+
+function drawCertificatePattern(ctx, width, height) {
+  ctx.save();
+  ctx.globalAlpha = 0.22;
+  ctx.strokeStyle = '#c89b3c';
+  ctx.lineWidth = 1.5;
+
+  for (let x = -height; x < width; x += 42) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + height, height);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = 0.12;
+  ctx.strokeStyle = '#123047';
+  for (let x = 0; x < width; x += 80) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.bezierCurveTo(x + 160, 350, x - 160, 680, x + 120, height);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+function drawRibbon(ctx, width) {
+  ctx.save();
+  const center = width / 2;
+  const y = 318;
+  const left = center - 480;
+  const right = center + 480;
+  const gradient = ctx.createLinearGradient(left, y, right, y);
+  gradient.addColorStop(0, '#123047');
+  gradient.addColorStop(0.5, '#1f4f68');
+  gradient.addColorStop(1, '#123047');
+
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.lineTo(right, y);
+  ctx.lineTo(right - 55, y + 72);
+  ctx.lineTo(left + 55, y + 72);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#f7e7bd';
+  ctx.textAlign = 'center';
+  ctx.font = '700 25px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('VERIFIED COMPLETION RECORD', center, y + 47);
+  ctx.restore();
+}
+
+function drawInfoBox(ctx, x, y, boxWidth, boxHeight, label, value) {
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = 'rgba(18, 48, 71, 0.18)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x, y, boxWidth, boxHeight, 18);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#475569';
+  ctx.font = '700 22px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText(label.toUpperCase(), x + boxWidth / 2, y + 42);
+
+  ctx.fillStyle = '#07111f';
+  ctx.font = '900 40px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText(value, x + boxWidth / 2, y + 88);
+  ctx.restore();
+}
+
+function drawSeal(ctx, x, y, credentialHash) {
+  ctx.save();
+  const outer = ctx.createRadialGradient(x - 24, y - 30, 18, x, y, 104);
+  outer.addColorStop(0, '#f8df90');
+  outer.addColorStop(0.6, '#c89b3c');
+  outer.addColorStop(1, '#8a681d');
+
+  ctx.fillStyle = outer;
+  ctx.beginPath();
+  ctx.arc(x, y, 104, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.strokeStyle = '#fff7d6';
+  ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.arc(x, y, 84, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.fillStyle = '#123047';
+  ctx.beginPath();
+  ctx.arc(x, y, 62, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#fff7d6';
+  ctx.textAlign = 'center';
+  ctx.font = '800 36px "Inter", "Segoe UI", sans-serif';
+  ctx.fillText('SG', x, y - 6);
+  ctx.font = '700 16px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText(credentialHash.replace('SG-', ''), x, y + 34);
+  ctx.restore();
+}
+
+function drawStamp(ctx, x, y, label) {
+  ctx.save();
+  // slightly smaller outer ring for neat fit
+  ctx.strokeStyle = '#9b1c2b';
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(x, y, 76, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // inner ring
+  ctx.strokeStyle = '#9b1c2b';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.arc(x, y, 54, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // center initials
+  ctx.fillStyle = '#9b1c2b';
+  ctx.textAlign = 'center';
+  ctx.font = '800 36px Inter, "Segoe UI", sans-serif';
+  ctx.fillText('SG', x, y - 6);
+
+  // small stamp text
+  ctx.fillStyle = '#9b1c2b';
+  ctx.font = '600 12px "JetBrains Mono", Consolas, monospace';
+  ctx.fillText('VERIFIED', x, y + 24);
+  ctx.fillText('CERTIFICATE', x, y + 40);
+
+  // optional short label below stamp
+  ctx.font = '600 16px Inter, "Segoe UI", sans-serif';
+  ctx.fillText(label, x, y + 72);
+  ctx.restore();
+}
+
+function seedFromString(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+function mulberry32(a) {
+  return function() {
+    a |= 0;
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function drawHandwrittenSignature(ctx, x, y, name, seedStr = '') {
+  const seed = seedStr ? seedFromString(seedStr) : Math.floor(Math.random() * 4294967295);
+  const rnd = mulberry32(seed);
+
+  ctx.save();
+  // slight rotation per-seed
+  const angle = (rnd() - 0.5) * 0.08; // +/- ~2.3 degrees
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  ctx.strokeStyle = '#07111f';
+  ctx.lineWidth = 2.4 + rnd() * 1.2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // draw flowing signature strokes using seeded randomness
+  ctx.beginPath();
+  ctx.moveTo(0, -20);
+  ctx.bezierCurveTo(48 + rnd() * 20, -46 + rnd() * 12, 120 + rnd() * 30, -4 + rnd() * 20, 200 + rnd() * 40, -18 + rnd() * 12);
+  ctx.bezierCurveTo(260 + rnd() * 30, -40 + rnd() * 18, 320 + rnd() * 40, 4 + rnd() * 30, 420 + rnd() * 60, -18 + rnd() * 18);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(18 + rnd() * 10, 4 + rnd() * 10);
+  ctx.bezierCurveTo(78 + rnd() * 30, 24 + rnd() * 24, 150 + rnd() * 40, -6 + rnd() * 16, 210 + rnd() * 40, 0 + rnd() * 18);
+  ctx.stroke();
+
+  // handwritten-looking name with slightly larger size for authority
+  ctx.fillStyle = '#07111f';
+  const fontSize = 36 + Math.floor(rnd() * 12);
+  ctx.font = `italic ${fontSize}px "Brush Script MT", "Segoe Script", cursive`;
+  ctx.textAlign = 'left';
+  ctx.fillText(name, 0, 70 + rnd() * 6);
+
+  // printed title under signature for authority clarity (smaller)
+  ctx.font = '600 12px Inter, "Segoe UI", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#334155';
+  ctx.fillText('Credential Authority — SkillGauntlet', 0, 120);
+
+  ctx.restore();
+}
+
+function drawSignature(ctx, x, y, label) {
+  ctx.save();
+  ctx.strokeStyle = '#123047';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + 450, y);
+  ctx.stroke();
+
+  ctx.fillStyle = '#0f172a';
+  ctx.font = '600 26px "Inter", "Segoe UI", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(label, x + 225, y + 44);
+  ctx.restore();
+}
+
+function drawFittedCenteredText(ctx, text, x, y, maxWidth, startSize, fontFamily, fontWeight) {
+  let size = startSize;
+  do {
+    ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
+    size -= 2;
+  } while (ctx.measureText(text).width > maxWidth && size > 42);
+
+  ctx.textAlign = 'center';
+  ctx.fillText(text, x, y);
+}
+
+function drawWrappedCenteredText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+
+  words.forEach((word) => {
+    const testLine = line ? `${line} ${word}` : word;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+      return;
+    }
+    line = testLine;
+  });
+
+  if (line) lines.push(line);
+
+  ctx.textAlign = 'center';
+  lines.forEach((wrappedLine, index) => {
+    ctx.fillText(wrappedLine, x, y + index * lineHeight);
+  });
 }
 
 function generateCredentialHash() {

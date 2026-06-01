@@ -683,17 +683,31 @@ button.disabled {
 }
 
 .certificate-pane {
-  border-color: rgba(21, 128, 61, 0.18);
-  background: #f0fdf4;
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(183, 121, 31, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(247, 241, 230, 0.82)),
+    linear-gradient(90deg, rgba(18, 48, 71, 0.08), rgba(183, 121, 31, 0.08));
+}
+
+.certificate-pane::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  pointer-events: none;
+  border: 1px solid rgba(183, 121, 31, 0.3);
+  border-radius: calc(var(--radius) - 2px);
 }
 
 .review-pane p,
 .certificate-pane p {
+  position: relative;
   margin: 0;
 }
 
 .certificate-note {
-  color: #14532d;
+  color: #123047;
   font-weight: 700;
 }
 
